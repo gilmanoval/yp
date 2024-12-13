@@ -30,6 +30,101 @@ const authenticate = (req, res, next) => {
     }
 };
 
+// Настройка Nodemailer для Яндекса
+const transporter = nodemailer.createTransport({
+    host: 'smtp.yandex.ru',
+    port: 465,
+    secure: true, // Используем SSL
+    auth: {
+        user: process.env.EMAIL_USER, // Ваш email на Яндексе
+        pass: process.env.EMAIL_PASSWORD, // Пароль приложения
+    },
+});
+
+// Регистрация пользователя
+app.post('/users/register', async (req, res) => {
+    try {
+        const { name, email, password, role } = req.body;
+
+        // Хэширование пароля
+        const hashedPassword = require('bcrypt').hashSync(password, 10);
+
+        // Генерация токена подтверждения
+        const emailToken = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+        const confirmLink = `http://localhost:3000/users/confirm/${emailToken}`;
+
+        // Отправка письма с подтверждением
+        await transporter.sendMail({
+            from: `"My App" <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject: 'Подтверждение регистрации',
+            text: `Привет, ${name}! Для завершения регистрации перейдите по ссылке: ${confirmLink}`,
+            html: `<p>Привет, ${name}!</p><p>Для завершения регистрации перейдите по ссылке: <a href="${confirmLink}">${confirmLink}</a></p>`,
+        });
+
+        // Сохранение пользователя с пометкой "неподтверждён"
+        const user = await User.create({ name, email, password: hashedPassword, role, isConfirmed: false });
+        res.status(201).json({ message: 'На вашу почту отправлено письмо для подтверждения регистрации.', user });
+    } catch (error) {
+        console.error(error);
+        res.status(400).json({ error: error.message });
+    }
+});
+
+// Подтверждение почты
+app.get('/users/confirm/:token', async (req, res) => {
+    try {
+        const { token } = req.params;
+
+        // Расшифровка токена
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+        // Поиск пользователя по email
+        const user = await User.findOne({ where: { email: decoded.email } });
+
+        if (!user) {
+            return res.status(404).json({ error: 'Пользователь не найден.' });
+        }
+
+        if (user.isConfirmed) {
+            return res.status(400).json({ message: 'Почта уже подтверждена.' });
+        }
+
+        // Подтверждение пользователя
+        user.isConfirmed = true;
+        await user.save();
+
+        res.json({ message: 'Регистрация завершена. Вы можете войти в систему.' });
+    } catch (error) {
+        console.error(error);
+        res.status(400).json({ error: 'Неверный или истёкший токен.' });
+    }
+});
+
+// Изменение логики входа: только подтверждённые пользователи
+app.post('/users/login', async (req, res) => {
+    const { email, password } = req.body;
+    const bcrypt = require('bcrypt');
+
+    try {
+        const user = await User.findOne({ where: { email } });
+
+        if (!user || !bcrypt.compareSync(password, user.password)) {
+            return res.status(401).json({ error: 'Неверные учетные данные' });
+        }
+
+        if (!user.isConfirmed) {
+            return res.status(403).json({ error: 'Подтвердите почту для завершения регистрации.' });
+        }
+
+        const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET);
+
+        res.json({ token, role: user.role });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
 
 // Тестовый маршрут
 app.get('/', (req, res) => {
@@ -47,38 +142,6 @@ app.get('/services', async (req, res) => {
     }
 });
 
-// Пользователи
-app.post('/users/register', async (req, res) => {
-    try {
-        const { name, email, password, role } = req.body;
-        const hashedPassword = require('bcrypt').hashSync(password, 10);
-        const user = await User.create({ name, email, password: hashedPassword, role });
-        res.status(201).json(user);
-    } catch (error) {
-        res.status(400).json({ error: error.message });
-    }
-});
-
-app.post('/users/login', async (req, res) => {
-    const { email, password } = req.body;
-    const bcrypt = require('bcrypt');
-    const jwt = require('jsonwebtoken');
-
-    try {
-        const user = await User.findOne({ where: { email } });
-        if (!user || !bcrypt.compareSync(password, user.password)) {
-            return res.status(401).json({ error: 'Неверные учетные данные' });
-        }
-
-        // Генерация токена с данными пользователя
-        const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET);
-
-        // Возврат токена и роли
-        res.json({ token, role: user.role });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
 
 app.get('/reviews', async (req, res) => {
     try {
