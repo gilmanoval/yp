@@ -5,6 +5,8 @@ const { sequelize, User, Service, Booking, Review, AdminLog } = require('./model
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const app = express();
+const nodemailer = require('nodemailer');
+const crypto = require('crypto');
 
 // Middleware
 app.use(cors());
@@ -40,7 +42,6 @@ const transporter = nodemailer.createTransport({
         pass: process.env.EMAIL_PASSWORD, // Пароль приложения
     },
 });
-
 // Регистрация пользователя
 app.post('/users/register', async (req, res) => {
     try {
@@ -49,82 +50,104 @@ app.post('/users/register', async (req, res) => {
         // Хэширование пароля
         const hashedPassword = require('bcrypt').hashSync(password, 10);
 
-        // Генерация токена подтверждения
-        const emailToken = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        // Генерация уникального кода для подтверждения email
+        const confirmationCode = crypto.randomBytes(3).toString('hex'); // Генерируем 6-значный код
 
-        const confirmLink = `http://localhost:3000/users/confirm/${emailToken}`;
-
-        // Отправка письма с подтверждением
+        // Отправка письма с кодом подтверждения
         await transporter.sendMail({
             from: `"My App" <${process.env.EMAIL_USER}>`,
             to: email,
             subject: 'Подтверждение регистрации',
-            text: `Привет, ${name}! Для завершения регистрации перейдите по ссылке: ${confirmLink}`,
-            html: `<p>Привет, ${name}!</p><p>Для завершения регистрации перейдите по ссылке: <a href="${confirmLink}">${confirmLink}</a></p>`,
+            text: `Привет, ${name}! Ваш код подтверждения для завершения регистрации: ${confirmationCode}`,
+            html: `<p>Привет, ${name}!</p><p>Ваш код подтверждения для завершения регистрации: <strong>${confirmationCode}</strong></p>`,
         });
 
-        // Сохранение пользователя с пометкой "неподтверждён"
-        const user = await User.create({ name, email, password: hashedPassword, role, isConfirmed: false });
-        res.status(201).json({ message: 'На вашу почту отправлено письмо для подтверждения регистрации.', user });
+        // Сохранение пользователя с кодом подтверждения в базу данных
+        const user = await User.create({
+            name,
+            email,
+            password: hashedPassword,
+            role,
+            confirmationcode: confirmationCode, // Используем тот же код
+            isconfirmed: false, // Пока не подтвержден
+        });
+
+        res.status(201).json({ message: 'На вашу почту отправлен код подтверждения.' });
     } catch (error) {
         console.error(error);
         res.status(400).json({ error: error.message });
     }
 });
 
-// Подтверждение почты
-app.get('/users/confirm/:token', async (req, res) => {
+
+
+app.post('/users/confirm', async (req, res) => {
+    const { email, confirmationCode } = req.body; // Обратите внимание на подтверждение правильности именования
+    console.log('Данные запроса:', req.body);
     try {
-        const { token } = req.params;
-
-        // Расшифровка токена
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-        // Поиск пользователя по email
-        const user = await User.findOne({ where: { email: decoded.email } });
+        // Проверяем, есть ли пользователь с таким email
+        const user = await User.findOne({ where: { email } });
 
         if (!user) {
-            return res.status(404).json({ error: 'Пользователь не найден.' });
+            return res.status(400).json({ error: 'Пользователь не найден' });
         }
 
-        if (user.isConfirmed) {
-            return res.status(400).json({ message: 'Почта уже подтверждена.' });
+        // Выводим в консоль код из базы данных и код, который вводит пользователь
+        console.log('Код из базы данных:', user.confirmationcode);
+        console.log('Код, введенный пользователем:', confirmationCode);
+
+        // Проверка кода
+        if (user.confirmationcode !== confirmationCode) {
+            return res.status(400).json({ error: 'Неверный код подтверждения' });
         }
 
-        // Подтверждение пользователя
-        user.isConfirmed = true;
+        // Если код верный, подтверждаем почту
+        user.isconfirmed = true;
         await user.save();
 
-        res.json({ message: 'Регистрация завершена. Вы можете войти в систему.' });
+        res.status(200).json({ message: 'Почта подтверждена!' });
     } catch (error) {
-        console.error(error);
-        res.status(400).json({ error: 'Неверный или истёкший токен.' });
+        console.error('Ошибка при подтверждении почты:', error);
+        res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
+
+  
 
 // Изменение логики входа: только подтверждённые пользователи
 app.post('/users/login', async (req, res) => {
     const { email, password } = req.body;
     const bcrypt = require('bcrypt');
+    const jwt = require('jsonwebtoken');
+    const { User } = require('./models'); // Импортируем модель User (предполагаем, что она определена)
 
     try {
+        // Ищем пользователя по email
         const user = await User.findOne({ where: { email } });
 
+        // Если пользователь не найден или пароль не совпадает
         if (!user || !bcrypt.compareSync(password, user.password)) {
             return res.status(401).json({ error: 'Неверные учетные данные' });
         }
 
-        if (!user.isConfirmed) {
+        // Проверяем, подтверждена ли почта
+        if (!user.isconfirmed) {
             return res.status(403).json({ error: 'Подтвердите почту для завершения регистрации.' });
         }
 
-        const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET);
+        // Создаем JWT токен
+        const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, {
+            expiresIn: '1h', // Опционально: установка времени действия токена
+        });
 
+        // Отправляем токен и роль пользователя в ответе
         res.json({ token, role: user.role });
     } catch (error) {
+        // Если произошла ошибка на сервере
         res.status(500).json({ error: error.message });
     }
 });
+
 
 // Тестовый маршрут
 app.get('/', (req, res) => {
@@ -175,8 +198,7 @@ app.post('/reviews', authenticate, async (req, res) => {
     }
 });
 
-// Получить все записи из таблицы Booking
-app.get('/bookings', authenticate, async (req, res) => {
+app.get('/bookings', async (req, res) => {
     try {
         const bookings = await Booking.findAll({
             include: [
@@ -204,8 +226,9 @@ app.get('/bookings', authenticate, async (req, res) => {
     }
 });
 
+
 // Добавить новую запись в таблицу Booking
-app.post('/bookings', authenticate, async (req, res) => {
+app.post('/bookings', async (req, res) => {
     const { user_id, service_id, booking_date, status, employee_id } = req.body;
     try {
         const booking = await Booking.create({ user_id, service_id, booking_date, status, employee_id });

@@ -50,35 +50,43 @@ const Booking = sequelize.define(
 );
 
 const User = sequelize.define(
-    'User',
-    {
-        id: {
-            type: DataTypes.INTEGER,
-            autoIncrement: true,
-            primaryKey: true,
-        },
-        name: {
-            type: DataTypes.STRING,
-            allowNull: false,
-        },
-        email: {
-            type: DataTypes.STRING,
-            unique: true,
-            allowNull: false,
-        },
-        password: {
-            type: DataTypes.STRING,
-            allowNull: false,
-        },
-        role: {
-            type: DataTypes.STRING,
-            defaultValue: 'user',
-        },
-    },
-    {
-        tableName: 'users', // Имя таблицы
-        timestamps: false, // Отключить временные метки
-    }
+  'User',
+  {
+      id: {
+          type: DataTypes.INTEGER,
+          autoIncrement: true,
+          primaryKey: true,
+      },
+      name: {
+          type: DataTypes.STRING,
+          allowNull: false,
+      },
+      email: {
+          type: DataTypes.STRING,
+          unique: true,
+          allowNull: false,
+      },
+      password: {
+          type: DataTypes.STRING,
+          allowNull: false,
+      },
+      role: {
+          type: DataTypes.STRING,
+          defaultValue: 'user',
+      },
+      confirmationcode: {
+          type: DataTypes.STRING(6), // Строка фиксированной длины (например, 6 символов для кода)
+          allowNull: true, // Может быть пустым, пока код не будет сгенерирован
+      },
+      isconfirmed: {
+          type: DataTypes.BOOLEAN,
+          defaultValue: false, // По умолчанию не подтверждено
+      },
+  },
+  {
+      tableName: 'users', // Имя таблицы
+      timestamps: false, // Отключить временные метки
+  }
 );
 
 // Модель отзыва
