@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Box, Card, CardContent, Typography, Grid, CardMedia } from '@mui/material';
+import { Box, Card, CardContent, Typography, Grid, CardMedia, Button } from '@mui/material';
+import { Link } from 'react-router-dom';
 import ServiceModal from './ServiceModal'; // Импортируем новый компонент
 
 const Services = () => {
@@ -9,6 +10,28 @@ const Services = () => {
   const [error, setError] = useState(null); // Состояние для отслеживания ошибок
   const [open, setOpen] = useState(false); // Состояние для открытия/закрытия модального окна
   const [selectedService, setSelectedService] = useState(null); // Состояние для хранения выбранной услуги
+  const [cart, setCart] = useState([]); // Состояние для корзины
+  const [token, setToken] = useState(null); // Состояние для хранения токена
+
+  // Загружаем корзину из localStorage при монтировании компонента
+  useEffect(() => {
+    const savedCart = JSON.parse(localStorage.getItem('cart')); // Загружаем данные из localStorage
+    if (savedCart) {
+      setCart(savedCart); // Если корзина есть, загружаем ее
+    }
+
+    const savedToken = localStorage.getItem('token'); // Проверка токена в localStorage
+    if (savedToken) {
+      setToken(savedToken); // Если токен есть, сохраняем его в состояние
+    }
+  }, []);
+
+  useEffect(() => {
+    // Сохраняем корзину в localStorage каждый раз, когда она изменяется
+    if (cart.length > 0) {
+      localStorage.setItem('cart', JSON.stringify(cart));
+    }
+  }, [cart]);
 
   useEffect(() => {
     // Получаем данные с сервера
@@ -36,6 +59,27 @@ const Services = () => {
     setSelectedService(null); // Сбрасываем выбранную услугу
   };
 
+  const handleAddToCart = (service) => {
+    // Добавляем услугу в корзину, если её ещё нет
+    setCart((prevCart) => {
+      // Проверяем, есть ли услуга в корзине
+      const existingService = prevCart.find((item) => item.id === service.id);
+      if (existingService) {
+        // Если услуга уже есть, не добавляем её снова
+        return prevCart;
+      }
+
+      const updatedCart = [...prevCart, service]; // Добавляем услугу в корзину
+      return updatedCart;
+    });
+    setOpen(false); // Закрываем модальное окно
+  };
+
+  const getCartServices = () => {
+    // Получаем все услуги из корзины
+    return cart;
+  };
+
   if (loading) {
     return <Typography variant="h6">Загрузка...</Typography>;
   }
@@ -47,8 +91,8 @@ const Services = () => {
   return (
     <Box sx={{ padding: 4 }}>
       <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold', textAlign: 'center' }}>
-  Услуги
-</Typography>
+        Услуги
+      </Typography>
 
       <Grid container spacing={3}>
         {services.map((service) => (
@@ -80,8 +124,8 @@ const Services = () => {
               <CardContent>
                 <Typography variant="h6">{service.name}</Typography>
                 <Typography variant="h6" sx={{ color: 'black', marginTop: 1 }}>
-  {service.price} руб.
-</Typography>
+                  {service.price} руб.
+                </Typography>
               </CardContent>
             </Card>
           </Grid>
@@ -93,7 +137,21 @@ const Services = () => {
         open={open} 
         onClose={handleClose} 
         service={selectedService} 
+        onAddToCart={handleAddToCart}
+        token={token}  // Передаем токен
+        // Передаем функцию добавления в корзину
       />
+
+      {/* Отображение кнопки для корзины только если есть токен */}
+      {token && (
+        <Box sx={{ marginTop: 4, textAlign: 'center' }}>
+          <Link to="/cart">
+            <Button variant="contained" color="primary">
+              Перейти в корзину ({getCartServices().length})
+            </Button>
+          </Link>
+        </Box>
+      )}
     </Box>
   );
 };

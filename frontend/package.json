@@ -5,14 +5,23 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
+    "@mui/icons-material": "^6.2.0",
     "@mui/material": "^6.1.10",
     "@react-google-maps/api": "^2.20.3",
     "axios": "^1.7.9",
+    "buffer": "^6.0.3",
     "cra-template": "1.2.0",
+    "dayjs": "^1.11.13",
+    "leaflet": "^1.9.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-google-recaptcha": "^3.1.0",
+    "react-invisible-recaptcha": "^0.3.1",
+    "react-leaflet": "^4.2.1",
+    "react-recaptcha-v3": "^2.0.1",
     "react-router-dom": "^7.0.2",
-    "react-scripts": "5.0.1"
+    "react-scripts": "5.0.1",
+    "react-simple-captcha": "^9.3.1"
   },
   "scripts": {
     "start": "react-scripts start",

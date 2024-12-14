@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('./database');
+const { Sequelize } = require('sequelize'); // Здесь мы импортируем Sequelize
 
 
 const Booking = sequelize.define(
@@ -88,6 +89,27 @@ const User = sequelize.define(
       timestamps: false, // Отключить временные метки
   }
 );
+
+
+const Preorder = sequelize.define('Preorder', {
+  phone: {
+      type: DataTypes.STRING(15),
+      allowNull: false,
+  },
+  services: {
+      type: DataTypes.JSONB,
+      allowNull: false,
+  },
+  created_at: {
+      type: DataTypes.DATE,
+      defaultValue: Sequelize.NOW,
+  },
+},
+{
+  tableName: 'preorders', // Правильное имя таблицы
+  timestamps: false, // Отключение временных меток
+});
+
 
 // Модель отзыва
 const Review = sequelize.define(
@@ -186,4 +208,4 @@ Booking.belongsTo(Service, {
   as: 'services',  // Псевдоним для ассоциации
 });
 
-module.exports = { sequelize, User, Service, Booking, Review, AdminLog };
+module.exports = { sequelize, User, Service, Booking, Review, AdminLog, Preorder };

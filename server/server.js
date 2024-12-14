@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const { sequelize, User, Service, Booking, Review, AdminLog } = require('./models.js');
+const { sequelize, User, Service, Booking, Review, AdminLog, Preorder  } = require('./models.js');
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const app = express();
@@ -78,8 +78,31 @@ app.post('/users/register', async (req, res) => {
         res.status(400).json({ error: error.message });
     }
 });
+app.post('/api/orders', async (req, res) => {
+    const { phone, services } = req.body;
 
+    // Проверка на наличие данных
+    if (!phone || !services || !Array.isArray(services) || services.length === 0) {
+        return res.status(400).json({ error: 'Номер телефона и услуги обязательны' });
+    }
 
+    try {
+        // Создание новой записи в таблице preorders с помощью Sequelize
+        const preorder = await Preorder.create({
+            phone,
+            services: JSON.stringify(services),  // Преобразуем массив в строку JSON
+        });
+
+        // Возвращаем результат
+        res.status(200).json({
+            message: 'Заказ оформлен успешно!',
+            order: preorder, // Возвращаем данные о заказе
+        });
+    } catch (err) {
+        console.error('Ошибка при сохранении данных', err);
+        res.status(500).json({ error: 'Ошибка при сохранении данных' });
+    }
+});
 
 app.post('/users/confirm', async (req, res) => {
     const { email, confirmationCode } = req.body; // Обратите внимание на подтверждение правильности именования

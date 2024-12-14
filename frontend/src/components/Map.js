@@ -1,28 +1,22 @@
+// src/components/Map.js
 import React from 'react';
-import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
-
-const containerStyle = {
-  width: '100%',
-  height: '400px',
-};
-
-const center = {
-  lat: 55.7558, // Широта вашего салона
-  lng: 37.6173, // Долгота вашего салона
-};
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
 
 const MyLocationMap = () => {
+  const position = [55.7558, 37.6176]; // Примерные координаты для Москвы
+
   return (
-    <LoadScript googleMapsApiKey="AIzaSyBjlIBH4t75Sq2YnK8odO7Af79zqYov74c">
-      <GoogleMap
-        mapContainerStyle={containerStyle}
-        center={center}
-        zoom={15}
-      >
-        {/* Размещение маркера на карте */}
-        <Marker position={center} />
-      </GoogleMap>
-    </LoadScript>
+    <MapContainer center={position} zoom={13} style={{ width: '100%', height: '400px' }}>
+      <TileLayer
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      />
+      <Marker position={position}>
+        <Popup>
+          Мы находимся здесь!
+        </Popup>
+      </Marker>
+    </MapContainer>
   );
 };
 

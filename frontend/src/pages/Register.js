@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, TextField, Button, Typography, Paper } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import ErrorModal from '../components/ErrorModal';
 import SuccessModal from '../components/SuccessModal';
+import { loadCaptchaEnginge, LoadCanvasTemplate, validateCaptcha } from 'react-simple-captcha'; // Импортируем функции для капчи
 
 const Register = () => {
   const [name, setName] = useState('');
@@ -17,8 +18,24 @@ const Register = () => {
   const [isEmailConfirmed, setIsEmailConfirmed] = useState(false);
   const navigate = useNavigate();
 
+  // Загрузка капчи при монтировании компонента
+  useEffect(() => {
+    loadCaptchaEnginge(6); // Загружаем капчу с 6 символами
+  }, []);
+
+  // Обработчик для регистрации
   const handleRegister = async (e) => {
     e.preventDefault();
+  
+    // Проверяем введенное значение капчи
+    const userCaptchaValue = document.getElementById('user_captcha_input').value;
+    if (!validateCaptcha(userCaptchaValue)) {
+      setError('Пожалуйста, введите правильную капчу');
+      setIsErrorModalOpen(true);
+      return; // Прерываем выполнение функции, если капча неверная
+    }
+  
+    // Если капча верная, продолжаем с запросом
     try {
       const response = await fetch('http://localhost:3000/users/register', {
         method: 'POST',
@@ -27,7 +44,7 @@ const Register = () => {
         },
         body: JSON.stringify({ name, email, password, role: 'user' }),
       });
-
+  
       const data = await response.json();
       if (response.ok) {
         setSuccessMessage('Для подтверждения почты, введите код. Код отправлен на вашу почту.');
@@ -43,6 +60,7 @@ const Register = () => {
     }
   };
 
+  // Обработчик для подтверждения кода
   const handleConfirmCode = async (e) => {
     e.preventDefault();
     try {
@@ -61,8 +79,7 @@ const Register = () => {
         setIsSuccessModalOpen(true);
         setTimeout(() => {
           navigate('/login');
-      }, 1000);        
-      navigate('/login');
+        }, 1000);
       } else {
         setError(data.error);
         setIsErrorModalOpen(true);
@@ -71,6 +88,11 @@ const Register = () => {
       setError('Ошибка соединения с сервером');
       setIsErrorModalOpen(true);
     }
+  };
+
+  // Обработчик для перезагрузки капчи
+  const handleCaptchaReload = () => {
+    loadCaptchaEnginge(6); // Перезагружаем капчу
   };
 
   return (
@@ -121,6 +143,21 @@ const Register = () => {
               sx={{ bgcolor: 'white', input: { color: 'black' }, label: { color: 'black' } }}
             />
           )}
+          {/* Добавляем компонент react-simple-captcha */}
+          <div className="col mt-3">
+            <LoadCanvasTemplate />
+          </div>
+          <TextField
+            label="Введите капчу"
+            type="text"
+            id="user_captcha_input"
+            fullWidth
+            required
+            sx={{ bgcolor: 'white', input: { color: 'black' }, label: { color: 'black' } }}
+          />
+          <Button onClick={handleCaptchaReload} variant="outlined" color="secondary" sx={{ marginBottom: 2 }}>
+            Перезагрузить капчу
+          </Button>
           <Button type="submit" variant="contained" color="primary" fullWidth sx={{ borderRadius: '20px', color: 'black' }}>
             {isRegistered ? 'Подтвердить почту' : 'Зарегистрироваться'}
           </Button>

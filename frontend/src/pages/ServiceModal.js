@@ -1,24 +1,46 @@
 import React from 'react';
-import { Dialog, DialogActions, DialogContent, DialogTitle, Button, Typography } from '@mui/material';
+import { Modal, Box, Typography, Button } from '@mui/material';
 
-const ServiceModal = ({ open, onClose, service }) => {
+const ServiceModal = ({ open, onClose, service, onAddToCart, token }) => {
   if (!service) return null;
 
   return (
-    <Dialog open={open} onClose={onClose}>
-      <DialogTitle>{service.name}</DialogTitle>
-      <DialogContent>
-        <Typography variant="body1">Описание: {service.description}</Typography>
-        <Typography variant="body1" sx={{ marginTop: 1 }}>
-          Продолжительность: {service.duration} мин.
+    <Modal open={open} onClose={onClose}>
+      <Box sx={{
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        backgroundColor: 'white',
+        padding: 4,
+        borderRadius: 2,
+        boxShadow: 3,
+        width: 400,
+      }}>
+        <Typography variant="h6">{service.name}</Typography>
+        <Typography variant="body1" color="textSecondary" sx={{ marginTop: 2 }}>
+          {service.description}
         </Typography>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} color="primary">
-          Закрыть
-        </Button>
-      </DialogActions>
-    </Dialog>
+        <Typography variant="h6" color="primary" sx={{ marginTop: 2 }}>
+          {service.price} руб.
+        </Typography>
+
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: 3 }}>
+          <Button onClick={onClose}>Закрыть</Button>
+
+          {/* Показываем кнопку "Добавить в корзину" только если токен существует */}
+          {token && (
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => onAddToCart(service)}
+            >
+              Добавить в корзину
+            </Button>
+          )}
+        </Box>
+      </Box>
+    </Modal>
   );
 };
 
