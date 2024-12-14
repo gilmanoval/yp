@@ -1,17 +1,20 @@
 import React, { useState } from 'react';
 import { Box, TextField, Button, Typography, Paper } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import ErrorModal from '../components/ErrorModal'; // Импорт ErrorModal
-import SuccessModal from '../components/SuccessModal'; // Импорт SuccessModal
+import ErrorModal from '../components/ErrorModal';
+import SuccessModal from '../components/SuccessModal';
 
 const Register = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState(''); // Для сообщения об ошибке
-  const [isErrorModalOpen, setIsErrorModalOpen] = useState(false); // Управление модальным окном ошибок
-  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false); // Управление модальным окном успеха
-  const [successMessage, setSuccessMessage] = useState(''); // Сообщение об успехе
+  const [confirmationCode, setConfirmationCode] = useState('');
+  const [error, setError] = useState('');
+  const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [isRegistered, setIsRegistered] = useState(false);
+  const [isEmailConfirmed, setIsEmailConfirmed] = useState(false);
   const navigate = useNavigate();
 
   const handleRegister = async (e) => {
@@ -27,45 +30,56 @@ const Register = () => {
 
       const data = await response.json();
       if (response.ok) {
-        console.log('Регистрация успешна:', data);
-        setSuccessMessage('Регистрация прошла успешно!'); // Установка сообщения
-        setIsSuccessModalOpen(true); // Открытие модального окна успеха
+        setSuccessMessage('Для подтверждения почты, введите код. Код отправлен на вашу почту.');
+        setIsRegistered(true);
+        setIsSuccessModalOpen(true);
       } else {
-        console.error('Ошибка регистрации:', data.error);
         setError(data.error);
         setIsErrorModalOpen(true);
       }
     } catch (error) {
-      console.error('Ошибка соединения с сервером:', error);
       setError('Ошибка соединения с сервером');
       setIsErrorModalOpen(true);
     }
   };
 
-  const handleCloseErrorModal = () => {
-    setIsErrorModalOpen(false);
-  };
+  const handleConfirmCode = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('http://localhost:3000/users/confirm', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, confirmationCode }),
+      });
 
-  const handleCloseSuccessModal = () => {
-    setIsSuccessModalOpen(false);
-    navigate('/login'); // Перенаправление на страницу входа
+      const data = await response.json();
+      if (response.ok) {
+        setSuccessMessage('Почта подтверждена! Теперь можете войти.');
+        setIsEmailConfirmed(true);
+        setIsSuccessModalOpen(true);
+        setTimeout(() => {
+          navigate('/login');
+      }, 1000);        
+      navigate('/login');
+      } else {
+        setError(data.error);
+        setIsErrorModalOpen(true);
+      }
+    } catch (error) {
+      setError('Ошибка соединения с сервером');
+      setIsErrorModalOpen(true);
+    }
   };
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '100vh',
-        bgcolor: 'background.default',
-      }}
-    >
-      <Paper elevation={3} sx={{ padding: 4, maxWidth: 400, width: '100%' }}>
-        <Typography variant="h5" component="h1" textAlign="center" gutterBottom>
+    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', bgcolor: 'white' }}>
+      <Paper elevation={3} sx={{ padding: 4, maxWidth: 400, width: '100%', bgcolor: '#e0f2ff' }}>
+        <Typography variant="h4" component="h1" textAlign="center" gutterBottom sx={{ color: 'black', fontWeight: 'bold' }}>
           Регистрация
         </Typography>
-        <Box component="form" onSubmit={handleRegister} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Box component="form" onSubmit={isRegistered ? handleConfirmCode : handleRegister} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <TextField
             label="Имя"
             type="text"
@@ -73,6 +87,8 @@ const Register = () => {
             onChange={(e) => setName(e.target.value)}
             fullWidth
             required
+            disabled={isRegistered || isEmailConfirmed}
+            sx={{ bgcolor: 'white', input: { color: 'black', textAlign: 'center' }, label: { color: 'black' } }}
           />
           <TextField
             label="Электронная почта"
@@ -81,6 +97,8 @@ const Register = () => {
             onChange={(e) => setEmail(e.target.value)}
             fullWidth
             required
+            disabled={isRegistered || isEmailConfirmed}
+            sx={{ bgcolor: 'white', input: { color: 'black', textAlign: 'center' }, label: { color: 'black' } }}
           />
           <TextField
             label="Пароль"
@@ -89,29 +107,28 @@ const Register = () => {
             onChange={(e) => setPassword(e.target.value)}
             fullWidth
             required
+            disabled={isRegistered || isEmailConfirmed}
+            sx={{ bgcolor: 'white', input: { color: 'black', textAlign: 'center' }, label: { color: 'black' } }}
           />
-          <Button type="submit" variant="contained" color="primary" fullWidth>
-            Зарегистрироваться
-          </Button>
-          <Button variant="text" fullWidth onClick={() => navigate('/login')}>
-            Уже есть аккаунт? Войдите
+          {isRegistered && !isEmailConfirmed && (
+            <TextField
+              label="Код подтверждения"
+              type="text"
+              value={confirmationCode}
+              onChange={(e) => setConfirmationCode(e.target.value)}
+              fullWidth
+              required
+              sx={{ bgcolor: 'white', input: { color: 'black' }, label: { color: 'black' } }}
+            />
+          )}
+          <Button type="submit" variant="contained" color="primary" fullWidth sx={{ borderRadius: '20px', color: 'black' }}>
+            {isRegistered ? 'Подтвердить почту' : 'Зарегистрироваться'}
           </Button>
         </Box>
       </Paper>
 
-      {/* Вызов компонента ErrorModal */}
-      <ErrorModal
-        open={isErrorModalOpen}
-        onClose={handleCloseErrorModal}
-        message={error}
-      />
-
-      {/* Вызов компонента SuccessModal */}
-      <SuccessModal
-        open={isSuccessModalOpen}
-        handleClose={handleCloseSuccessModal}
-        successMessage={successMessage}
-      />
+      <ErrorModal open={isErrorModalOpen} onClose={() => setIsErrorModalOpen(false)} message={error} />
+      <SuccessModal open={isSuccessModalOpen} handleClose={() => setIsSuccessModalOpen(false)} successMessage={successMessage} />
     </Box>
   );
 };

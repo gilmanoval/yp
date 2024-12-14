@@ -11,11 +11,10 @@ import Admin from './pages/Admin';
 
 const App = () => {
   const token = localStorage.getItem('token'); // Токен, сохранённый после авторизации
-  const userRole = localStorage.getItem('role'); // Роль пользователя (например, 'admin')
+  const role = localStorage.getItem('role'); // Роль пользователя (например, 'admin')
 
   // Выводим данные в консоль для отладки
-  console.log('Token:', token); 
-  console.log('User Role:', userRole);
+   
 
   return (
     <>
@@ -30,11 +29,12 @@ const App = () => {
           
           {/* Проверка роли пользователя и перенаправление, если не админ */}
           <Route
-  path="/admin"
-  element={
-    token && userRole === 'admin' ? <Admin /> : <Navigate to="/login" />
-  }
-/>
+            path="/admin"
+            element={
+              // Убедитесь, что token и userRole существуют и роль - admin
+              token && role === 'admin' ? <Admin /> : <Navigate to="/" />
+            }
+          />
 
         </Routes>
       </main>

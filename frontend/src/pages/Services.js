@@ -46,9 +46,9 @@ const Services = () => {
 
   return (
     <Box sx={{ padding: 4 }}>
-      <Typography variant="h4" gutterBottom>
-        Услуги нашего салона
-      </Typography>
+      <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold', textAlign: 'center' }}>
+  Услуги
+</Typography>
 
       <Grid container spacing={3}>
         {services.map((service) => (
@@ -57,6 +57,7 @@ const Services = () => {
               sx={{
                 maxWidth: 345,
                 boxShadow: 3, // Начальная тень
+                backgroundColor: '#e0f2ff', // Голубой фон
                 '&:hover': {
                   boxShadow: 10, // Тень при наведении
                   transform: 'scale(1.05)', // Увеличение при наведении
@@ -78,9 +79,9 @@ const Services = () => {
               )}
               <CardContent>
                 <Typography variant="h6">{service.name}</Typography>
-                <Typography variant="h6" color="primary" sx={{ marginTop: 1 }}>
-                  {service.price} руб.
-                </Typography>
+                <Typography variant="h6" sx={{ color: 'black', marginTop: 1 }}>
+  {service.price} руб.
+</Typography>
               </CardContent>
             </Card>
           </Grid>
