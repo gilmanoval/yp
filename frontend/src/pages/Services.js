@@ -1,12 +1,20 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { Box, Card, CardContent, Typography, Grid, CardMedia, Button } from '@mui/material';
-import { Link } from 'react-router-dom';
-import ServiceModal from './ServiceModal'; // Импортируем новый компонент
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  Grid,
+  CardMedia,
+  Button,
+} from "@mui/material";
+import { Link } from "react-router-dom";
+import ServiceModal from "./ServiceModal"; // Импортируем новый компонент
 
 const Services = () => {
   const [services, setServices] = useState([]); // Состояние для хранения данных об услугах
-  const [loading, setLoading] = useState(true);  // Состояние для отслеживания загрузки
+  const [loading, setLoading] = useState(true); // Состояние для отслеживания загрузки
   const [error, setError] = useState(null); // Состояние для отслеживания ошибок
   const [open, setOpen] = useState(false); // Состояние для открытия/закрытия модального окна
   const [selectedService, setSelectedService] = useState(null); // Состояние для хранения выбранной услуги
@@ -15,12 +23,12 @@ const Services = () => {
 
   // Загружаем корзину из localStorage при монтировании компонента
   useEffect(() => {
-    const savedCart = JSON.parse(localStorage.getItem('cart')); // Загружаем данные из localStorage
+    const savedCart = JSON.parse(localStorage.getItem("cart")); // Загружаем данные из localStorage
     if (savedCart) {
       setCart(savedCart); // Если корзина есть, загружаем ее
     }
 
-    const savedToken = localStorage.getItem('token'); // Проверка токена в localStorage
+    const savedToken = localStorage.getItem("token"); // Проверка токена в localStorage
     if (savedToken) {
       setToken(savedToken); // Если токен есть, сохраняем его в состояние
     }
@@ -29,7 +37,7 @@ const Services = () => {
   useEffect(() => {
     // Сохраняем корзину в localStorage каждый раз, когда она изменяется
     if (cart.length > 0) {
-      localStorage.setItem('cart', JSON.stringify(cart));
+      localStorage.setItem("cart", JSON.stringify(cart));
     }
   }, [cart]);
 
@@ -37,11 +45,11 @@ const Services = () => {
     // Получаем данные с сервера
     const fetchServices = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/services');
-        setServices(response.data);  // Сохраняем полученные данные в состояние
+        const response = await axios.get("http://localhost:3000/services");
+        setServices(response.data); // Сохраняем полученные данные в состояние
         setLoading(false); // Устанавливаем загрузку в false, когда данные получены
       } catch (err) {
-        setError('Ошибка при загрузке услуг');
+        setError("Ошибка при загрузке услуг");
         setLoading(false);
       }
     };
@@ -85,12 +93,20 @@ const Services = () => {
   }
 
   if (error) {
-    return <Typography variant="h6" color="error">{error}</Typography>;
+    return (
+      <Typography variant="h6" color="error">
+        {error}
+      </Typography>
+    );
   }
 
   return (
     <Box sx={{ padding: 4 }}>
-      <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold', textAlign: 'center' }}>
+      <Typography
+        variant="h4"
+        gutterBottom
+        sx={{ fontWeight: "bold", textAlign: "center" }}
+      >
         Услуги
       </Typography>
 
@@ -101,11 +117,11 @@ const Services = () => {
               sx={{
                 maxWidth: 345,
                 boxShadow: 3, // Начальная тень
-                backgroundColor: '#e0f2ff', // Голубой фон
-                '&:hover': {
+                backgroundColor: "#e0f2ff", // Голубой фон
+                "&:hover": {
                   boxShadow: 10, // Тень при наведении
-                  transform: 'scale(1.05)', // Увеличение при наведении
-                  transition: 'all 0.3s ease-in-out', // Плавный переход
+                  transform: "scale(1.05)", // Увеличение при наведении
+                  transition: "all 0.3s ease-in-out", // Плавный переход
                 },
               }}
               onClick={() => handleClickOpen(service)} // Открытие модального окна по клику
@@ -117,13 +133,13 @@ const Services = () => {
                   image={service.image}
                   alt={service.name}
                   sx={{
-                    objectFit: 'cover', // Чтобы картинка заполняла весь блок
+                    objectFit: "cover", // Чтобы картинка заполняла весь блок
                   }}
                 />
               )}
               <CardContent>
                 <Typography variant="h6">{service.name}</Typography>
-                <Typography variant="h6" sx={{ color: 'black', marginTop: 1 }}>
+                <Typography variant="h6" sx={{ color: "black", marginTop: 1 }}>
                   {service.price} руб.
                 </Typography>
               </CardContent>
@@ -133,18 +149,18 @@ const Services = () => {
       </Grid>
 
       {/* Вставляем модальное окно */}
-      <ServiceModal 
-        open={open} 
-        onClose={handleClose} 
-        service={selectedService} 
+      <ServiceModal
+        open={open}
+        onClose={handleClose}
+        service={selectedService}
         onAddToCart={handleAddToCart}
-        token={token}  // Передаем токен
+        token={token} // Передаем токен
         // Передаем функцию добавления в корзину
       />
 
       {/* Отображение кнопки для корзины только если есть токен */}
       {token && (
-        <Box sx={{ marginTop: 4, textAlign: 'center' }}>
+        <Box sx={{ marginTop: 4, textAlign: "center" }}>
           <Link to="/cart">
             <Button variant="contained" color="primary">
               Перейти в корзину ({getCartServices().length})

@@ -1,19 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { Box, TextField, Button, Typography, Paper } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
-import ErrorModal from '../components/ErrorModal';
-import SuccessModal from '../components/SuccessModal';
-import { loadCaptchaEnginge, LoadCanvasTemplate, validateCaptcha } from 'react-simple-captcha'; // Импортируем функции для капчи
+import React, { useState, useEffect } from "react";
+import { Box, TextField, Button, Typography, Paper } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import ErrorModal from "../components/ErrorModal";
+import SuccessModal from "../components/SuccessModal";
+import {
+  loadCaptchaEnginge,
+  LoadCanvasTemplate,
+  validateCaptcha,
+} from "react-simple-captcha"; // Импортируем функции для капчи
 
 const Register = () => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmationCode, setConfirmationCode] = useState('');
-  const [error, setError] = useState('');
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmationCode, setConfirmationCode] = useState("");
+  const [error, setError] = useState("");
   const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState("");
   const [isRegistered, setIsRegistered] = useState(false);
   const [isEmailConfirmed, setIsEmailConfirmed] = useState(false);
   const navigate = useNavigate();
@@ -26,28 +30,31 @@ const Register = () => {
   // Обработчик для регистрации
   const handleRegister = async (e) => {
     e.preventDefault();
-  
+
     // Проверяем введенное значение капчи
-    const userCaptchaValue = document.getElementById('user_captcha_input').value;
+    const userCaptchaValue =
+      document.getElementById("user_captcha_input").value;
     if (!validateCaptcha(userCaptchaValue)) {
-      setError('Пожалуйста, введите правильную капчу');
+      setError("Пожалуйста, введите правильную капчу");
       setIsErrorModalOpen(true);
       return; // Прерываем выполнение функции, если капча неверная
     }
-  
+
     // Если капча верная, продолжаем с запросом
     try {
-      const response = await fetch('http://localhost:3000/users/register', {
-        method: 'POST',
+      const response = await fetch("http://localhost:3000/users/register", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name, email, password, role: 'user' }),
+        body: JSON.stringify({ name, email, password, role: "user" }),
       });
-  
+
       const data = await response.json();
       if (response.ok) {
-        setSuccessMessage('Для подтверждения почты, введите код. Код отправлен на вашу почту.');
+        setSuccessMessage(
+          "Для подтверждения почты, введите код. Код отправлен на вашу почту."
+        );
         setIsRegistered(true);
         setIsSuccessModalOpen(true);
       } else {
@@ -55,7 +62,7 @@ const Register = () => {
         setIsErrorModalOpen(true);
       }
     } catch (error) {
-      setError('Ошибка соединения с сервером');
+      setError("Ошибка соединения с сервером");
       setIsErrorModalOpen(true);
     }
   };
@@ -64,28 +71,28 @@ const Register = () => {
   const handleConfirmCode = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:3000/users/confirm', {
-        method: 'POST',
+      const response = await fetch("http://localhost:3000/users/confirm", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ email, confirmationCode }),
       });
 
       const data = await response.json();
       if (response.ok) {
-        setSuccessMessage('Почта подтверждена! Теперь можете войти.');
+        setSuccessMessage("Почта подтверждена! Теперь можете войти.");
         setIsEmailConfirmed(true);
         setIsSuccessModalOpen(true);
         setTimeout(() => {
-          navigate('/login');
+          navigate("/login");
         }, 1000);
       } else {
         setError(data.error);
         setIsErrorModalOpen(true);
       }
     } catch (error) {
-      setError('Ошибка соединения с сервером');
+      setError("Ошибка соединения с сервером");
       setIsErrorModalOpen(true);
     }
   };
@@ -96,12 +103,33 @@ const Register = () => {
   };
 
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', bgcolor: 'white' }}>
-      <Paper elevation={3} sx={{ padding: 4, maxWidth: 400, width: '100%', bgcolor: '#e0f2ff' }}>
-        <Typography variant="h4" component="h1" textAlign="center" gutterBottom sx={{ color: 'black', fontWeight: 'bold' }}>
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        minHeight: "100vh",
+        bgcolor: "white",
+      }}
+    >
+      <Paper
+        elevation={3}
+        sx={{ padding: 4, maxWidth: 400, width: "100%", bgcolor: "#e0f2ff" }}
+      >
+        <Typography
+          variant="h4"
+          component="h1"
+          textAlign="center"
+          gutterBottom
+          sx={{ color: "black", fontWeight: "bold" }}
+        >
           Регистрация
         </Typography>
-        <Box component="form" onSubmit={isRegistered ? handleConfirmCode : handleRegister} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Box
+          component="form"
+          onSubmit={isRegistered ? handleConfirmCode : handleRegister}
+          sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+        >
           <TextField
             label="Имя"
             type="text"
@@ -110,7 +138,11 @@ const Register = () => {
             fullWidth
             required
             disabled={isRegistered || isEmailConfirmed}
-            sx={{ bgcolor: 'white', input: { color: 'black', textAlign: 'center' }, label: { color: 'black' } }}
+            sx={{
+              bgcolor: "white",
+              input: { color: "black", textAlign: "center" },
+              label: { color: "black" },
+            }}
           />
           <TextField
             label="Электронная почта"
@@ -120,7 +152,11 @@ const Register = () => {
             fullWidth
             required
             disabled={isRegistered || isEmailConfirmed}
-            sx={{ bgcolor: 'white', input: { color: 'black', textAlign: 'center' }, label: { color: 'black' } }}
+            sx={{
+              bgcolor: "white",
+              input: { color: "black", textAlign: "center" },
+              label: { color: "black" },
+            }}
           />
           <TextField
             label="Пароль"
@@ -130,7 +166,11 @@ const Register = () => {
             fullWidth
             required
             disabled={isRegistered || isEmailConfirmed}
-            sx={{ bgcolor: 'white', input: { color: 'black', textAlign: 'center' }, label: { color: 'black' } }}
+            sx={{
+              bgcolor: "white",
+              input: { color: "black", textAlign: "center" },
+              label: { color: "black" },
+            }}
           />
           {isRegistered && !isEmailConfirmed && (
             <TextField
@@ -140,7 +180,11 @@ const Register = () => {
               onChange={(e) => setConfirmationCode(e.target.value)}
               fullWidth
               required
-              sx={{ bgcolor: 'white', input: { color: 'black' }, label: { color: 'black' } }}
+              sx={{
+                bgcolor: "white",
+                input: { color: "black" },
+                label: { color: "black" },
+              }}
             />
           )}
           {/* Добавляем компонент react-simple-captcha */}
@@ -153,19 +197,42 @@ const Register = () => {
             id="user_captcha_input"
             fullWidth
             required
-            sx={{ bgcolor: 'white', input: { color: 'black' }, label: { color: 'black' } }}
+            sx={{
+              bgcolor: "white",
+              input: { color: "black" },
+              label: { color: "black" },
+            }}
           />
-          <Button onClick={handleCaptchaReload} variant="outlined" color="secondary" sx={{ marginBottom: 2 }}>
+          <Button
+            onClick={handleCaptchaReload}
+            variant="outlined"
+            color="secondary"
+            sx={{ marginBottom: 2 }}
+          >
             Перезагрузить капчу
           </Button>
-          <Button type="submit" variant="contained" color="primary" fullWidth sx={{ borderRadius: '20px', color: 'black' }}>
-            {isRegistered ? 'Подтвердить почту' : 'Зарегистрироваться'}
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            fullWidth
+            sx={{ borderRadius: "20px", color: "black" }}
+          >
+            {isRegistered ? "Подтвердить почту" : "Зарегистрироваться"}
           </Button>
         </Box>
       </Paper>
 
-      <ErrorModal open={isErrorModalOpen} onClose={() => setIsErrorModalOpen(false)} message={error} />
-      <SuccessModal open={isSuccessModalOpen} handleClose={() => setIsSuccessModalOpen(false)} successMessage={successMessage} />
+      <ErrorModal
+        open={isErrorModalOpen}
+        onClose={() => setIsErrorModalOpen(false)}
+        message={error}
+      />
+      <SuccessModal
+        open={isSuccessModalOpen}
+        handleClose={() => setIsSuccessModalOpen(false)}
+        successMessage={successMessage}
+      />
     </Box>
   );
 };

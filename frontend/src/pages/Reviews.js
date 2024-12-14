@@ -71,106 +71,113 @@ const Review = () => {
   return (
     <Box sx={{ padding: 4 }}>
       <Typography variant="h3" component="h1" gutterBottom>
-      Отзывы
-    </Typography>
-{/* Добавляем описание компании */}
-<Typography variant="body1" color="text.secondary" sx={{ marginBottom: 4 }}>
-      Добро пожаловать в наш салон красоты! Мы всегда рады помочь вам выглядеть наилучшим образом.
-    </Typography>
-
-  {/* Если пользователь авторизован, показываем форму для добавления отзыва */}
-  {token && (
-    <Paper
-      elevation={3}
-      sx={{ padding: 3, marginBottom: 4, backgroundColor: "#e0f2ff" }}
-    >
-      {/* Голубой фон */}
-      <Typography variant="h6" gutterBottom>
-        Добавить отзыв
+        Отзывы
       </Typography>
-      <form onSubmit={handleSubmit}>
-        <TextField
-          label="Ваш отзыв"
-          value={content}
-          onChange={(e) => {
-            if (e.target.value.length <= 100) {
-              setContent(e.target.value);
-            }
-          }}
-          multiline
-          rows={4}
-          fullWidth
-          margin="normal"
-          inputProps={{ maxLength: 100 }} // Ограничение на уровне атрибута
-          sx={{ backgroundColor: "white" }} // Устанавливаем белый фон
-        />
+      {/* Добавляем описание компании */}
+      <Typography
+        variant="body1"
+        color="text.secondary"
+        sx={{ marginBottom: 4 }}
+      >
+        Добро пожаловать в наш салон красоты! Мы всегда рады помочь вам
+        выглядеть наилучшим образом.
+      </Typography>
 
-        <Rating
-          name="rating"
-          value={rating}
-          onChange={(e, newValue) => setRating(newValue)}
-        />
-        {error && (
-          <Typography variant="body2" color="error" sx={{ marginTop: 1 }}>
-            {error}
-          </Typography>
-        )}
-        <Box sx={{ display: "flex", justifyContent: "flex-end", marginTop: 2 }}>
-        <Button
-  type="submit"
-  variant="contained"
-  color="primary"
-  sx={{
-    borderRadius: "20px", // Скругление углов
-    color: "black", // Цвет текста черный
-  }}
->
-  Отправить
-</Button>
-        </Box>
-      </form>
-    </Paper>
-  )}
-
-  {/* Список всех отзывов */}
-  <List>
-    {reviews.map((user) =>
-      user.reviews.map((review) => (
-        <ListItem
-          key={review.id}
-          alignItems="flex-start"
-          sx={{ marginBottom: 2 }}
+      {/* Если пользователь авторизован, показываем форму для добавления отзыва */}
+      {token && (
+        <Paper
+          elevation={3}
+          sx={{ padding: 3, marginBottom: 4, backgroundColor: "#e0f2ff" }}
         >
-          <Paper
-            elevation={1}
-            sx={{
-              padding: 2,
-              width: "100%",
-              backgroundColor: "#e0f2ff", // Голубой цвет фона
-            }}
-          >
-            <Typography variant="body1">{review.content}</Typography>
-            <Rating value={review.rating} readOnly sx={{ marginTop: 1 }} />
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{ marginTop: 1, display: "block" }}
-            >
-              Пользователь: {user.name || "Неизвестный"}
-            </Typography>
-          </Paper>
-        </ListItem>
-      ))
-    )}
-  </List>
+          {/* Голубой фон */}
+          <Typography variant="h6" gutterBottom>
+            Добавить отзыв
+          </Typography>
+          <form onSubmit={handleSubmit}>
+            <TextField
+              label="Ваш отзыв"
+              value={content}
+              onChange={(e) => {
+                if (e.target.value.length <= 100) {
+                  setContent(e.target.value);
+                }
+              }}
+              multiline
+              rows={4}
+              fullWidth
+              margin="normal"
+              inputProps={{ maxLength: 100 }} // Ограничение на уровне атрибута
+              sx={{ backgroundColor: "white" }} // Устанавливаем белый фон
+            />
 
-  {/* Модальное окно для ошибок */}
-  <ErrorModal
-    open={isErrorModalOpen}
-    onClose={handleCloseErrorModal}
-    message={error}
-  />
-</Box>
+            <Rating
+              name="rating"
+              value={rating}
+              onChange={(e, newValue) => setRating(newValue)}
+            />
+            {error && (
+              <Typography variant="body2" color="error" sx={{ marginTop: 1 }}>
+                {error}
+              </Typography>
+            )}
+            <Box
+              sx={{ display: "flex", justifyContent: "flex-end", marginTop: 2 }}
+            >
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                sx={{
+                  borderRadius: "20px", // Скругление углов
+                  color: "black", // Цвет текста черный
+                }}
+              >
+                Отправить
+              </Button>
+            </Box>
+          </form>
+        </Paper>
+      )}
+
+      {/* Список всех отзывов */}
+      <List>
+        {reviews.map((user) =>
+          user.reviews.map((review) => (
+            <ListItem
+              key={review.id}
+              alignItems="flex-start"
+              sx={{ marginBottom: 2 }}
+            >
+              <Paper
+                elevation={1}
+                sx={{
+                  padding: 2,
+                  width: "100%",
+                  backgroundColor: "#e0f2ff", // Голубой цвет фона
+                }}
+              >
+                <Typography variant="body1">{review.content}</Typography>
+                <Rating value={review.rating} readOnly sx={{ marginTop: 1 }} />
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ marginTop: 1, display: "block" }}
+                >
+                  Пользователь: {user.name || "Неизвестный"}
+                </Typography>
+              </Paper>
+            </ListItem>
+          ))
+        )}
+      </List>
+
+      {/* Модальное окно для ошибок */}
+      <ErrorModal
+        open={isErrorModalOpen}
+        onClose={handleCloseErrorModal}
+        message={error}
+      />
+    </Box>
   );
 };
 

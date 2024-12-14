@@ -1,5 +1,12 @@
-import React from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography } from '@mui/material';
+import React from "react";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Typography,
+} from "@mui/material";
 
 const ErrorModal = ({ open, onClose, message }) => {
   return (
@@ -9,7 +16,9 @@ const ErrorModal = ({ open, onClose, message }) => {
         <Typography>{message}</Typography>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} color="primary">Закрыть</Button>
+        <Button onClick={onClose} color="primary">
+          Закрыть
+        </Button>
       </DialogActions>
     </Dialog>
   );

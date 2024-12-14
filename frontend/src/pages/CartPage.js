@@ -1,19 +1,28 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Typography, Button, Card, CardContent, Grid, TextField, Modal } from '@mui/material';
-import { Link } from 'react-router-dom';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import {
+  Box,
+  Typography,
+  Button,
+  Card,
+  CardContent,
+  Grid,
+  TextField,
+  Modal,
+} from "@mui/material";
+import { Link } from "react-router-dom";
+import axios from "axios";
 
 const CartPage = () => {
   const [cart, setCart] = useState([]); // Состояние для корзины
   const [openModal, setOpenModal] = useState(false); // Состояние для открытия модального окна
   const [openSuccessModal, setOpenSuccessModal] = useState(false); // Состояние для модального окна успешного заказа
-  const [phoneNumber, setPhoneNumber] = useState(''); // Состояние для номера телефона
+  const [phoneNumber, setPhoneNumber] = useState(""); // Состояние для номера телефона
   const [isSubmitting, setIsSubmitting] = useState(false); // Состояние для отслеживания отправки данных
   const [isPhoneValid, setIsPhoneValid] = useState(true); // Состояние для проверки валидности номера телефона
 
   useEffect(() => {
     // Загружаем корзину из localStorage
-    const savedCart = JSON.parse(localStorage.getItem('cart'));
+    const savedCart = JSON.parse(localStorage.getItem("cart"));
     if (savedCart) {
       setCart(savedCart);
     }
@@ -23,7 +32,7 @@ const CartPage = () => {
     // Удаление товара из корзины по ID
     const updatedCart = cart.filter((item) => item.id !== id);
     setCart(updatedCart);
-    localStorage.setItem('cart', JSON.stringify(updatedCart)); // Обновляем localStorage
+    localStorage.setItem("cart", JSON.stringify(updatedCart)); // Обновляем localStorage
   };
 
   const getTotalPrice = () => {
@@ -47,21 +56,25 @@ const CartPage = () => {
     try {
       const orderData = {
         phone: phoneNumber,
-        services: cart.map(item => item.id),
+        services: cart.map((item) => item.id),
       };
-      await axios.post('http://localhost:3000/api/orders', orderData);
+      await axios.post("http://localhost:3000/api/orders", orderData);
       setIsSubmitting(false);
       setOpenModal(false); // Закрыть модальное окно после успешной отправки
       setOpenSuccessModal(true); // Открыть модальное окно успешного заказа
     } catch (error) {
       setIsSubmitting(false);
-      alert('Ошибка при оформлении заказа.');
+      alert("Ошибка при оформлении заказа.");
     }
   };
 
   return (
     <Box sx={{ padding: 4 }}>
-      <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold', textAlign: 'center' }}>
+      <Typography
+        variant="h4"
+        gutterBottom
+        sx={{ fontWeight: "bold", textAlign: "center" }}
+      >
         Корзина
       </Typography>
 
@@ -77,7 +90,12 @@ const CartPage = () => {
                 <img
                   src={item.image}
                   alt={item.name}
-                  style={{ width: 80, height: 80, objectFit: 'cover', marginRight: 16 }}
+                  style={{
+                    width: 80,
+                    height: 80,
+                    objectFit: "cover",
+                    marginRight: 16,
+                  }}
                 />
                 <CardContent>
                   <Typography variant="h6">{item.name}</Typography>
@@ -102,8 +120,8 @@ const CartPage = () => {
 
       {/* Общая стоимость */}
       {cart.length > 0 && (
-        <Box sx={{ marginTop: 4, textAlign: 'center' }}>
-          <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+        <Box sx={{ marginTop: 4, textAlign: "center" }}>
+          <Typography variant="h5" sx={{ fontWeight: "bold" }}>
             Общая стоимость: {getTotalPrice()} руб.
           </Typography>
           <Button
@@ -117,7 +135,7 @@ const CartPage = () => {
         </Box>
       )}
 
-      <Box sx={{ marginTop: 4, textAlign: 'center' }}>
+      <Box sx={{ marginTop: 4, textAlign: "center" }}>
         <Link to="/services">
           <Button variant="outlined" color="secondary">
             Продолжить покупки
@@ -129,13 +147,13 @@ const CartPage = () => {
       <Modal open={openModal} onClose={() => setOpenModal(false)}>
         <Box
           sx={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
             width: 400,
-            bgcolor: 'background.paper',
-            border: '2px solid #000',
+            bgcolor: "background.paper",
+            border: "2px solid #000",
             boxShadow: 24,
             p: 4,
           }}
@@ -144,8 +162,9 @@ const CartPage = () => {
             Оформление заказа
           </Typography>
           <Typography variant="body1" sx={{ marginBottom: 2 }}>
-            Пожалуйста, введите ваш номер телефона для согласования даты и времени с администратором. 
-            Мы свяжемся с вами как можно скорее. Телефон салона: 88005553535.
+            Пожалуйста, введите ваш номер телефона для согласования даты и
+            времени с администратором. Мы свяжемся с вами как можно скорее.
+            Телефон салона: 88005553535.
           </Typography>
           <TextField
             label="Номер телефона"
@@ -163,7 +182,7 @@ const CartPage = () => {
             disabled={isSubmitting || !isPhoneValid || !phoneNumber}
             fullWidth
           >
-            {isSubmitting ? 'Отправка...' : 'Подтвердить заказ'}
+            {isSubmitting ? "Отправка..." : "Подтвердить заказ"}
           </Button>
         </Box>
       </Modal>
@@ -172,13 +191,13 @@ const CartPage = () => {
       <Modal open={openSuccessModal} onClose={() => setOpenSuccessModal(false)}>
         <Box
           sx={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
             width: 400,
-            bgcolor: 'background.paper',
-            border: '2px solid #000',
+            bgcolor: "background.paper",
+            border: "2px solid #000",
             boxShadow: 24,
             p: 4,
           }}
@@ -187,7 +206,8 @@ const CartPage = () => {
             Заказ оформлен!
           </Typography>
           <Typography variant="body1" sx={{ marginBottom: 2 }}>
-            Мы свяжемся с вами для согласования даты и времени. Спасибо за покупку!
+            Мы свяжемся с вами для согласования даты и времени. Спасибо за
+            покупку!
           </Typography>
           <Button
             variant="contained"
