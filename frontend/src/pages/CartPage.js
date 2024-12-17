@@ -212,7 +212,7 @@ const CartPage = () => {
           <Button
             variant="contained"
             color="primary"
-            onClick={() => setOpenSuccessModal(false)} // Закрыть модальное окно
+            onClick={() => setOpenSuccessModal(false)}
             fullWidth
           >
             Закрыть
