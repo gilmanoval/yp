@@ -336,7 +336,11 @@ const startServer = async () => {
         });
     } catch (error) {
         console.error('Ошибка подключения к базе данных:', error);
+        process.exit(1);
     }
 };
 
-startServer();
+if (require.main === module) {
+    startServer(); // Запускаем сервер только если файл выполняется напрямую
+}
+module.exports = app;

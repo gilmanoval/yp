@@ -86,7 +86,7 @@ const Register = () => {
         setIsSuccessModalOpen(true);
         setTimeout(() => {
           navigate("/login");
-        }, 1000);
+        }, 3000);
       } else {
         setError(data.error);
         setIsErrorModalOpen(true);
