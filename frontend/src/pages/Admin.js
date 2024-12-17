@@ -124,8 +124,8 @@ const Admin = () => {
           setDialogOpen(true);
         }}
         sx={{
-          borderRadius: "20px", // Скругление углов
-          color: "black", // Черный текст
+          borderRadius: "20px", 
+          color: "black", 
         }}
       >
         Добавить бронирование
